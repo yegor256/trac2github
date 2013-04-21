@@ -24,6 +24,9 @@ if (version_compare(PHP_VERSION, '5.3', '<')) {
 }
 log('PHP version detected: ' . PHP_VERSION);
 
+date_default_timezone_set('UTC');
+log('Trac timezone set to ' . date_default_timezone_get());
+
 $opts = getopt("ht:u:p:g:w:r:");
 try {
 	require_once './Migrations.php';

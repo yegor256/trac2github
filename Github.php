@@ -62,6 +62,78 @@ final class Github {
         return $json;
     }
     /**
+     * Create an issue.
+     * @param string $title Title of the new issue
+     * @param string $body Body to post as a description
+     * @return int Issue number
+     */
+    public function create($title, $body) {
+        $request = new \HTTP_Request2();
+        $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues'));
+        $request->setMethod('POST');
+        $request->setBody(
+            json_encode(
+                array(
+                    'title' => $title,
+                    'body' => $body
+                )
+            )
+        );
+        $response = $request->send();
+        if ($response->getStatus() != 201) {
+            throw new \Exception('failed to create an issue in Github');
+        }
+        $json = json_decode($response->getBody(), true);
+        log('Issue #' . $json['number'] . ' created in Github');
+        return $json['number'];
+    }
+    /**
+     * Post a comment to the issue.
+     * @param int $issue Issue number
+     * @param string $comment Comment to post
+     */
+    public function post($issue, $comment) {
+        $request = new \HTTP_Request2();
+        $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues/' . $issue . '/comments'));
+        $request->setMethod('POST');
+        $request->setBody(json_encode(array('body' => $comment)));
+        $response = $request->send();
+        if ($response->getStatus() != 201) {
+            throw new \Exception('failed to post a comment to Github issue #' . $issue);
+        }
+        log('Comment posted to Github issue #' . $issue);
+    }
+    /**
+     * Close an issue.
+     * @param int $issue Issue number
+     */
+    public function close($issue) {
+        $request = new \HTTP_Request2();
+        $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues/' . $issue));
+        $request->setMethod('PATCH');
+        $request->setBody(json_encode(array('state' => 'closed')));
+        $response = $request->send();
+        if ($response->getStatus() != 200) {
+            throw new \Exception('failed to close a Github issue #' . $issue);
+        }
+        log('Closed Github issue #' . $issue);
+    }
+    /**
+     * Reopen an issue.
+     * @param int $issue Issue number
+     */
+    public function reopen($issue) {
+        $request = new \HTTP_Request2();
+        $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues/' . $issue));
+        $request->setMethod('PATCH');
+        $request->setBody(json_encode(array('state' => 'open')));
+        $response = $request->send();
+        if ($response->getStatus() != 200) {
+            throw new \Exception('failed to reopen a Github issue #' . $issue);
+        }
+        log('Re-opened Github issue #' . $issue);
+    }
+    /**
      * Make a URL.
      * @param string $path Path to append
      * @return Net_URL The URL

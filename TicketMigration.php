@@ -50,8 +50,66 @@ final class TicketMigration implements Migration {
         $summary = $details[3]['summary'];
         $description = $details[3]['description'];
         log('Ticket #' . $this->_number . ' goes to GitHub issue #'. $this->_number . ': ' . $summary);
+        $issue = $this->_github->create(
+            $summary,
+            $this->_format(
+                $details[3]['reporter'],
+                $details[1]->timestamp,
+                $description
+            )
+        );
+        // if ($issue != $this->_number) {
+        //     throw new \Exception('Github issue number mismatch');
+        // }
         $changes = $this->_trac->changeLog($this->_number);
-		log('Ticket #' . $this->_number . ' migrated to GitHub');
+        $comments = 0;
+        foreach ($changes as $change) {
+            if ($change[2] == 'comment' && !empty($change[4])) {
+                $this->_github->post(
+                    $issue,
+                    $this->_format($change[1], $change[0]->timestamp, $change[4])
+                );
+            } else if ($change[2] == 'status' && $change[4] == 'closed') {
+                $this->_github->close($issue);
+            } else if ($change[2] == 'status' && $change[4] == 'open') {
+                $this->_github->reopen($issue);
+            }
+            ++$comments;
+        }
+		log(
+            'Ticket #' . $this->_number . ' migrated to GitHub issue #' . $issue
+            . ' with ' . $comments . ' comment(s)'
+        );
 	}
-
+    /**
+     * Format a comment for github.
+     * @param string $author Author from Trac
+     * @param int $date When posted to Trac
+     * @param string $text Comment text from Trac
+     */
+    private function _format($author, $date, $text) {
+        $regexps = array(
+            '/\{{3}(.+?)\}{3}/' => '`\1`',
+            '/\{{3}(.+?)\}{3}/s' => "```\n\1\n```",
+            '/\={4}\s(.+?)\s\={4}/' => '### \1',
+            '/\={3}\s(.+?)\s\={3}/' => '## \1',
+            '/\={2}\s(.+?)\s\={2}/' => '# \1',
+            '/\=\s(.+?)\s\=[\s\n]*/' => '',
+            '/\[(http[^\s\[\]]+)\s([^\[\]]+)\]/' => '[\2](\1)',
+            '/\!(([A-Z][a-z0-9]+){2,})/' => '\1',
+            '/\'{3}(.+)\'{3}/' => '*\1*',
+            '/\'{2}(.+)\'{2}/' => '_\1_',
+            '/^\s\*/' => '*',
+            '/^\s\d\./' => '1.',
+        );
+        $md = preg_replace(array_keys($regexps), $regexps, $text);
+        $matches = array();
+        if (preg_match('/^(.*?)@.*$/', $author, $matches)) {
+            $author = $matches[1];
+        }
+        return '_migrated from Trac, where originally posted by '
+            . '**' . $author . '** on '
+            . date('j-M-o g:ia', $date)
+            . "_\n\n" . $md;
+    }
 }
