@@ -1,4 +1,5 @@
-= Trac2Github
+Trac2Github
+============
 
 Simple migration script from Trac to GitHub. The goal of this
 software tool is to enable fast and transparent migration from
