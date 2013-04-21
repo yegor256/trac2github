@@ -38,6 +38,7 @@ $ php trac2github.php
 
 There are a few limitations of this script:
 
+ * It sets one user as an assignee for all tickets;
  * It migrates only Trac tickets (milestones, versions, wiki pages, etc. are ignored);
  * It converts Trac formatting to GitHub using simple regular expressions (which may fail sometimes);
  * It DOESN'T convert Trac users to GitHub users;

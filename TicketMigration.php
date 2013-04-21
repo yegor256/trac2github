@@ -90,7 +90,7 @@ final class TicketMigration implements Migration {
     private function _format($author, $date, $text) {
         $regexps = array(
             '/\{{3}(.+?)\}{3}/' => '`\1`',
-            '/\{{3}(.+?)\}{3}/s' => "```\n\1\n```",
+            '/\{{3}[^\n]*\n(.+?)\n\}{3}/s' => "```\n\\1\n```",
             '/\={4}\s(.+?)\s\={4}/' => '### \1',
             '/\={3}\s(.+?)\s\={3}/' => '## \1',
             '/\={2}\s(.+?)\s\={2}/' => '# \1',

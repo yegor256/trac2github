@@ -75,7 +75,8 @@ final class Github {
             json_encode(
                 array(
                     'title' => $title,
-                    'body' => $body
+                    'body' => $body,
+                    'assignee' => $this->_user,
                 )
             )
         );
