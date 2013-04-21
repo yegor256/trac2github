@@ -15,14 +15,36 @@
  */
 
 require_once './Migration.php';
+require_once 'XML/RPC2/Client.php';
 
 final class TicketMigration implements Migration {
-	
+    /**
+     * Trac client.
+     * @var XML_RPC2_Client
+     */
+    private $_trac;
+    /**
+     * Ticket number.
+     */
+    private $_number;
+    /**
+     * Public ctor.
+     * @param XML_RPC2_Client $trac Trac client
+     * @param int $number Ticket number
+     */
+    public function __construct(XML_RPC2_Client $trac, $number) {
+        $this->_trac = $trac;
+        $this->_number = $number;
+    }
 	/**
 	 * Shoot the migration.
 	 */
 	public function shoot() {
-		echo 'done';
+        $details = $this->_trac->changeLog($this->_number);
+        $summary = $details[3]['summary'];
+        $description = $details[3]['description'];
+        logg('Ticket #' . $this->_number . ' goes to GitHub issue #'. $this->_number . ': ' . $summary);
+		logg('Ticket #' . $this->_number . ' migrated to GitHub');
 	}
 
 }

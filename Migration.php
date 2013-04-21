@@ -15,10 +15,10 @@
  */
 
 interface Migration {
-	
+
 	/**
 	 * Shoot the migration.
 	 */
 	public function shoot();
-	
+
 }

@@ -14,29 +14,33 @@
  * limitations under the License.
  */
 
+function logg($text) {
+    echo $text . "\n";
+}
+
 if (version_compare(PHP_VERSION, '5.3', '<')) {
     error_log('PHP version 5.3 or higher is required. Your version is ' . PHP_VERSION);
     die(-1);
 }
+logg('PHP version detected: ' . PHP_VERSION);
 
 $opts = getopt("ht:u:p:g:w:r:");
 try {
 	require_once './Migrations.php';
     $migrations = new Migrations($opts);
 } catch (Exception $e) {
-    error_log($e->getMessage());
+    error_log('ERROR: ' . $e->getMessage());
     $opts = array('h' => true);
 }
 
 if (array_key_exists('h', $opts)) {
     echo <<<EOT
 Usage: php trac2github.php [options]
-    -t=<trac-URL>           URL of Trac instance with enabled XmlRpcPlugin
-    -u=<trac-user-name>     Trac user name, which has read permissions
-    -p=<trac-password>      Trac password
-    -g=<github-user>        GitHub user name
-    -w=<github-password>    GitHub password
+    -t=<trac-URL>           URL of Trac instance with enabled XmlRpcPlugin,
+                            where Basic authentication can be used in the URL
+    -u=<github-user>        GitHub user name
     -r=<repository>         GitHub repository name
+    -p=<github-password>    GitHub password
 
 EOT;
     die(0);

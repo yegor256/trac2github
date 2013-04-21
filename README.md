@@ -18,6 +18,12 @@ Copyright (c) 1997-2013 The PHP Group
 Zend Engine v2.4.0, Copyright (c) 1998-2013 Zend Technologies
 ```
 
+Install required PEAR libraries:
+
+```
+$ pear install --alldeps XML_RPC2 HTTP_Request2 Net_URL2
+```
+
 Make sure your Trac instance has [XmlRpcPlugin](http://trac-hacks.org/wiki/XmlRpcPlugin)
 installed and your Trac user has read permissions.
 
