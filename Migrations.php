@@ -72,7 +72,7 @@ final class Migrations implements \Iterator {
         $this->_github = new Github($opts['u'], $opts['r'], $opts['p']);
         $existing = $this->_github->issues();
         if (!empty($existing)) {
-            throw new \Exception('GitHub repository is not empty and contains ' . count($existing) . ' issue(s)');
+            log('GitHub repository is not empty and contains ' . count($existing) . ' issue(s)!');
         }
     }
     /**

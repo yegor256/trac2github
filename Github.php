@@ -62,6 +62,33 @@ final class Github {
         return $json;
     }
     /**
+     * Issue exists with this title?
+     * @param int $issue Issue number
+     * @param string $title Title of the new issue
+     * @return bool TRUE if it already exists
+     */
+    public function exists($issue, $title) {
+        $request = new \HTTP_Request2();
+        $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues/' . $issue));
+        $attempt = 0;
+        while (true) {
+            try {
+                $response = $request->send();
+                if ($response->getStatus() == 404) {
+                    return false;
+                }
+                log('failed to check: ' . $response->getBody());
+            } catch (\HTTP_Request2_Exception $e) {
+                log('failed to check for issue existence');
+            }
+            if (++$attempt > 5) {
+                throw new \HTTP_Request2_Exception(
+                    'failed to check issue #' . $issue . ' in Github'
+                );
+            }
+        }
+    }
+    /**
      * Create an issue.
      * @param string $title Title of the new issue
      * @param string $body Body to post as a description
@@ -80,11 +107,22 @@ final class Github {
                 )
             )
         );
-        $response = $request->send();
-        if ($response->getStatus() != 201) {
-            throw new \Exception(
-                'failed to create an issue in Github: ' . $response->getBody()
-            );
+        $attempt = 0;
+        while (true) {
+            try {
+                $response = $request->send();
+                if ($response->getStatus() != 201) {
+                    throw new \HTTP_Request2_Exception(
+                        'failed to create an issue in Github: ' . $response->getBody()
+                    );
+                }
+                break;
+            } catch (\HTTP_Request2_Exception $e) {
+                if (++$attempt > 5) {
+                    throw $e;
+                }
+                log('failed to create an issue, will try again');
+            }
         }
         $json = json_decode($response->getBody(), true);
         log('Issue #' . $json['number'] . ' created in Github');
@@ -96,17 +134,27 @@ final class Github {
      * @param string $comment Comment to post
      */
     public function post($issue, $comment) {
-        sleep(1);
         $request = new \HTTP_Request2();
         $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues/' . $issue . '/comments'));
         $request->setMethod('POST');
         $request->setBody(json_encode(array('body' => $comment)));
-        $response = $request->send();
-        if ($response->getStatus() != 201) {
-            throw new \Exception(
-                'failed to post a comment to Github issue #' . $issue
-                . ': ' . $response->getBody()
-            );
+        $attempt = 0;
+        while (true) {
+            try {
+                $response = $request->send();
+                if ($response->getStatus() != 201) {
+                    throw new \HTTP_Request2_Exception(
+                        'failed to post a comment to Github issue #' . $issue
+                        . ': ' . $response->getBody()
+                    );
+                }
+                break;
+            } catch (\HTTP_Request2_Exception $e) {
+                if (++$attempt > 5) {
+                    throw $e;
+                }
+                log('failed to post to issue #' . $issue . ', will try again');
+            }
         }
         log('Comment posted to Github issue #' . $issue);
     }
