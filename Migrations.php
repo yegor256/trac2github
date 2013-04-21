@@ -82,7 +82,7 @@ final class Migrations implements \Iterator {
         $this->_position = 0;
         $this->_numbers = array();
         log('Loading Trac ticket numbers... (may take some time)');
-        $this->_numbers = $this->_trac->query("max=0");
+        $this->_numbers = $this->_trac->query("max=0&order=id");
         log('Found ' . count($this->_numbers) . ' ticket number(s)');
     }
     /**

@@ -50,16 +50,22 @@ final class TicketMigration implements Migration {
         $summary = $details[3]['summary'];
         $description = $details[3]['description'];
         log('Ticket #' . $this->_number . ' goes to GitHub issue #'. $this->_number . ': ' . $summary);
-        $issue = $this->_github->create(
-            $summary,
-            $this->_format(
-                $details[3]['reporter'],
-                $details[1]->timestamp,
-                $description
-            )
-        );
-        if ($issue != $this->_number) {
-            throw new \Exception('Github issue number mismatch');
+        while (true) {
+            $issue = $this->_github->create(
+                $summary,
+                $this->_format(
+                    $details[3]['reporter'],
+                    $details[1]->timestamp,
+                    $description
+                )
+            );
+            if ($issue > $this->_number) {
+                throw new \Exception('Github issue number mismatch');
+            }
+            if ($issue == $this->_number) {
+                break;
+            }
+            $this->_github->close($issue);
         }
         $changes = $this->_trac->changeLog($this->_number);
         $comments = 0;
