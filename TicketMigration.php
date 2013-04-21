@@ -58,9 +58,9 @@ final class TicketMigration implements Migration {
                 $description
             )
         );
-        // if ($issue != $this->_number) {
-        //     throw new \Exception('Github issue number mismatch');
-        // }
+        if ($issue != $this->_number) {
+            throw new \Exception('Github issue number mismatch');
+        }
         $changes = $this->_trac->changeLog($this->_number);
         $comments = 0;
         foreach ($changes as $change) {
