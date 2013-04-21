@@ -1,4 +1,4 @@
-<?php
+<?php namespace tg;
 /**
  * Copyright 2013 Yegor Bugayenko
  *

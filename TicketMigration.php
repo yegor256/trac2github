@@ -1,4 +1,4 @@
-<?php
+<?php namespace tg;
 /**
  * Copyright 2013 Yegor Bugayenko
  *
@@ -28,23 +28,30 @@ final class TicketMigration implements Migration {
      */
     private $_number;
     /**
+     * Github.
+     * @var Github
+     */
+    private $_github;
+    /**
      * Public ctor.
      * @param XML_RPC2_Client $trac Trac client
      * @param int $number Ticket number
      */
-    public function __construct(XML_RPC2_Client $trac, $number) {
+    public function __construct(\XML_RPC2_Client $trac, $number, Github $github) {
         $this->_trac = $trac;
         $this->_number = $number;
+        $this->_github = $github;
     }
 	/**
 	 * Shoot the migration.
 	 */
 	public function shoot() {
-        $details = $this->_trac->changeLog($this->_number);
+        $details = $this->_trac->get($this->_number);
         $summary = $details[3]['summary'];
         $description = $details[3]['description'];
-        logg('Ticket #' . $this->_number . ' goes to GitHub issue #'. $this->_number . ': ' . $summary);
-		logg('Ticket #' . $this->_number . ' migrated to GitHub');
+        log('Ticket #' . $this->_number . ' goes to GitHub issue #'. $this->_number . ': ' . $summary);
+        $changes = $this->_trac->changeLog($this->_number);
+		log('Ticket #' . $this->_number . ' migrated to GitHub');
 	}
 
 }

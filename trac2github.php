@@ -1,4 +1,4 @@
-<?php
+<?php namespace tg;
 /**
  * Copyright 2013 Yegor Bugayenko
  *
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-function logg($text) {
+function log($text) {
     echo $text . "\n";
 }
 
@@ -22,13 +22,13 @@ if (version_compare(PHP_VERSION, '5.3', '<')) {
     error_log('PHP version 5.3 or higher is required. Your version is ' . PHP_VERSION);
     die(-1);
 }
-logg('PHP version detected: ' . PHP_VERSION);
+log('PHP version detected: ' . PHP_VERSION);
 
 $opts = getopt("ht:u:p:g:w:r:");
 try {
 	require_once './Migrations.php';
     $migrations = new Migrations($opts);
-} catch (Exception $e) {
+} catch (\Exception $e) {
     error_log('ERROR: ' . $e->getMessage());
     $opts = array('h' => true);
 }

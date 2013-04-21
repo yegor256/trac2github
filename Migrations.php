@@ -1,4 +1,4 @@
-<?php
+<?php namespace tg;
 /**
  * Copyright 2013 Yegor Bugayenko
  *
@@ -18,12 +18,20 @@ require_once './Github.php';
 require_once './TicketMigration.php';
 require_once 'XML/RPC2/Client.php';
 
-final class Migrations implements Iterator {
+/**
+ * Iterator of all ticket migrations.
+ */
+final class Migrations implements \Iterator {
     /**
      * Trac client.
-     * @var XML_RPC2_Client
+     * @var \XML_RPC2_Client
      */
     private $_trac;
+    /**
+     * Github client.
+     * @var Github
+     */
+    private $_github;
     /**
      * All Trac ticket numbers.
      * @var array
@@ -40,31 +48,31 @@ final class Migrations implements Iterator {
      */
     public function __construct(array $opts) {
         if (!isset($opts['t'])) {
-            throw new Exception('Trac URL not defined by -t=...');
+            throw new \Exception('Trac URL not defined by -t=...');
         }
         ini_set("default_socket_timeout", -1);
-        logg('PHP socket timeout reset to enable long-running queries');
-        $this->_trac = XML_RPC2_Client::create(
+        log('PHP socket timeout reset to enable long-running queries');
+        $this->_trac = \XML_RPC2_Client::create(
             $opts['t'],
             array(
                 'prefix' => 'ticket.',
                 'encoding' => 'utf-8',
             )
         );
-        logg('Trac XML RPC client configured at ' . $opts['t']);
+        log('Trac XML RPC client configured at ' . $opts['t']);
         if (!isset($opts['u'])) {
-            throw new Exception('GitHub user name not defined by -u=...');
+            throw new \Exception('GitHub user name not defined by -u=...');
         }
         if (!isset($opts['p'])) {
-            throw new Exception('GitHub password not defined by -p=...');
+            throw new \Exception('GitHub password not defined by -p=...');
         }
         if (!isset($opts['r'])) {
-            throw new Exception('GitHub repository name not defined by -r=...');
+            throw new \Exception('GitHub repository name not defined by -r=...');
         }
         $this->_github = new Github($opts['u'], $opts['r'], $opts['p']);
         $existing = $this->_github->issues();
         if (!empty($existing)) {
-            throw new Exception('GitHub repository is not empty and contains ' . count($existing) . ' issue(s)');
+            throw new \Exception('GitHub repository is not empty and contains ' . count($existing) . ' issue(s)');
         }
     }
     /**
@@ -73,16 +81,20 @@ final class Migrations implements Iterator {
     public function rewind() {
         $this->_position = 0;
         $this->_numbers = array();
-        logg('Loading Trac ticket numbers... (may take some time)');
+        log('Loading Trac ticket numbers... (may take some time)');
         $this->_numbers = $this->_trac->query("max=0");
-        logg('Found ' . count($this->_numbers) . ' ticket number(s)');
+        log('Found ' . count($this->_numbers) . ' ticket number(s)');
     }
     /**
      * Get current element.
      * @return Migration Current migration
      */
     public function current() {
-        return new TicketMigration($this->_trac, $this->_numbers[$this->_position]);
+        return new TicketMigration(
+            $this->_trac,
+            $this->_numbers[$this->_position],
+            $this->_github
+        );
     }
     /**
      * Shift to the next migration.

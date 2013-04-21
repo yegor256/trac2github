@@ -1,4 +1,4 @@
-<?php
+<?php namespace tg;
 /**
  * Copyright 2013 Yegor Bugayenko
  *
@@ -47,7 +47,7 @@ final class Github {
         $this->_user = $user;
         $this->_repo = $repo;
         $this->_password = $password;
-        logg('GitHub client configured for ' . $this->_url());
+        log('GitHub client configured for ' . $this->_url());
     }
     /**
      * List all issues.
@@ -55,10 +55,10 @@ final class Github {
      * @see http://developer.github.com/v3/issues/#list-issues-for-a-repository
      */
     public function issues() {
-        $request = new HTTP_Request2();
+        $request = new \HTTP_Request2();
         $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues'));
         $json = json_decode($request->send()->getBody(), true);
-        logg('Found ' . count($json) . ' issues in GitHub');
+        log('Found ' . count($json) . ' issues in GitHub');
         return $json;
     }
     /**
@@ -67,7 +67,7 @@ final class Github {
      * @return Net_URL The URL
      */
     private function _url($path = '') {
-        $url = new Net_URL2('https://api.github.com/');
+        $url = new \Net_URL2('https://api.github.com/');
         $url->setPath($path);
         $url->setUserinfo($this->_user, $this->_password);
         return $url;
