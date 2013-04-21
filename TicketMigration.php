@@ -113,9 +113,13 @@ final class TicketMigration implements Migration {
         if (preg_match('/^(.*?)@.*$/', $author, $matches)) {
             $author = $matches[1];
         }
-        return '_migrated from Trac, where originally posted by '
+        $body = '_migrated from Trac, where originally posted by '
             . '**' . $author . '** on '
             . date('j-M-o g:ia', $date)
             . "_\n\n" . $md;
+        if (strlen($body) > 60000) {
+            $body = substr($body, 0, 60000);
+        }
+        return $body;
     }
 }

@@ -82,7 +82,9 @@ final class Github {
         );
         $response = $request->send();
         if ($response->getStatus() != 201) {
-            throw new \Exception('failed to create an issue in Github');
+            throw new \Exception(
+                'failed to create an issue in Github: ' . $response->getBody()
+            );
         }
         $json = json_decode($response->getBody(), true);
         log('Issue #' . $json['number'] . ' created in Github');
@@ -94,13 +96,17 @@ final class Github {
      * @param string $comment Comment to post
      */
     public function post($issue, $comment) {
+        sleep(1);
         $request = new \HTTP_Request2();
         $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues/' . $issue . '/comments'));
         $request->setMethod('POST');
         $request->setBody(json_encode(array('body' => $comment)));
         $response = $request->send();
         if ($response->getStatus() != 201) {
-            throw new \Exception('failed to post a comment to Github issue #' . $issue);
+            throw new \Exception(
+                'failed to post a comment to Github issue #' . $issue
+                . ': ' . $response->getBody()
+            );
         }
         log('Comment posted to Github issue #' . $issue);
     }
@@ -115,7 +121,10 @@ final class Github {
         $request->setBody(json_encode(array('state' => 'closed')));
         $response = $request->send();
         if ($response->getStatus() != 200) {
-            throw new \Exception('failed to close a Github issue #' . $issue);
+            throw new \Exception(
+                'failed to close a Github issue #' . $issue
+                . ': ' . $response->getBody()
+            );
         }
         log('Closed Github issue #' . $issue);
     }
@@ -130,7 +139,10 @@ final class Github {
         $request->setBody(json_encode(array('state' => 'open')));
         $response = $request->send();
         if ($response->getStatus() != 200) {
-            throw new \Exception('failed to reopen a Github issue #' . $issue);
+            throw new \Exception(
+                'failed to reopen a Github issue #' . $issue
+                . ': ' . $response->getBody()
+            );
         }
         log('Re-opened Github issue #' . $issue);
     }
