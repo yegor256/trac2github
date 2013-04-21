@@ -14,8 +14,50 @@
  * limitations under the License.
  */
 
-final class Migrations {
-    /**
-     * Public ctor.
-     */
+final class Migrations implements Iterator {
+	
+	/**
+	 * Array of all ticket numbers.
+	 */
+	private $_numbers;
+	
+	/**
+	 * Public ctor.
+	 * @param array $opts Options 
+	 */
+	public function __construct(array $opts) {
+		
+	}
+	
+	/**
+	 * @see Iterator::current()
+	 */
+	public function current() {
+	}
+
+	/* (non-PHPdoc)
+	 * @see Iterator::next()
+	 */
+	public function next() {
+	}
+
+	/* (non-PHPdoc)
+	 * @see Iterator::key()
+	 */
+	public function key() {
+	}
+
+	/* (non-PHPdoc)
+	 * @see Iterator::valid()
+	 */
+	public function valid() {
+	}
+
+	/* (non-PHPdoc)
+	 * @see Iterator::rewind()
+	 */
+	public function rewind() {
+		$this->_trac->call();
+	}
+
 }

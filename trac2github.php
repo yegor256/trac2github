@@ -21,6 +21,7 @@ if (version_compare(PHP_VERSION, '5.3', '<')) {
 
 $opts = getopt("ht:u:p:g:w:r:");
 try {
+	require_once './Migrations.php';
     $migrations = new Migrations($opts);
 } catch (Exception $e) {
     error_log($e->getMessage());
