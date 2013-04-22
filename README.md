@@ -34,6 +34,10 @@ Then, run the script and read its output for further instructions:
 $ php trac2github.php
 ```
 
+You can more or less safely restart the tool after accidental crash. However, for 
+a clear migration I recommend to start from an empty Github project always. If the
+tool crashes for some reason, delete the project from Github and create it again.
+
 ## Limitations
 
 There are a few limitations of this script:

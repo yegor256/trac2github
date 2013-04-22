@@ -77,6 +77,9 @@ final class Github {
                 if ($response->getStatus() == 404) {
                     return false;
                 }
+                if ($response->getStatus() == 200) {
+                    return true;
+                }
                 log('failed to check: ' . $response->getBody());
             } catch (\HTTP_Request2_Exception $e) {
                 log('failed to check for issue existence');
