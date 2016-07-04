@@ -103,6 +103,7 @@ final class TicketMigration implements Migration {
             '/\'{2}(.+)\'{2}/' => '_\1_',
             '/^\s\*/' => '*',
             '/^\s\d\./' => '1.',
+            '/@+?(\w+)/' => '**\1**',
         );
         $md = preg_replace(array_keys($regexps), $regexps, $text);
         $matches = array();
