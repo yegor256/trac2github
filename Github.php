@@ -63,7 +63,6 @@ final class Github {
             $request->setUrl($this->_url('/repos/' . $this->_orga . '/' . $this->_repo . '/issues'));
         }
         $json = json_decode($request->send()->getBody(), true);
-        print_r($json);
         log('Found ' . count($json) . ' issues in GitHub');
         return $json;
     }
