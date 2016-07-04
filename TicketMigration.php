@@ -49,6 +49,7 @@ final class TicketMigration implements Migration {
         $details = $this->_trac->get($this->_number);
         $summary = $details[3]['summary'];
         $description = $details[3]['description'];
+
         if ($this->_github->exists($summary)) {
            log('Ticket #' . $this->_number . ' already exists in GitHub!');
            return;

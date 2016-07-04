@@ -50,6 +50,22 @@ final class Github {
         $this->_orga = $orga;
         log('GitHub client configured for ' . $this->_url());
     }
+
+    public function wait_limit_reset(){
+        $request = new \HTTP_Request2();
+        $request->setUrl($this->_url('/rate_limit'));
+
+        do {
+            $ans=json_decode($request->send()->getBody(),true);
+            $remain=intval($ans['resources']['core']['remaining']);
+            $reset=intval($ans['resources']['core']['reset']);
+            $timetoreset=$reset-time();
+            if($remain<=100){
+                print_r("API-limit nearly reached(".$remain."). Time to reset: ".$timetoreset." sec\n");
+                sleep(15);
+            }
+        }while ($remain<=100);
+    }
     /**
      * List all issues.
      * @return array Decoded JSON
@@ -100,6 +116,7 @@ final class Github {
      * @return int Issue number
      */
     public function create($title, $body) {
+        $this->wait_limit_reset();
         $request = new \HTTP_Request2();
         if(!isset($this->_orga)){
             $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues'));
