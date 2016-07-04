@@ -10,6 +10,9 @@ $ git clone git@github.com:jbs1/trac2github.git
 
 Make sure you have PHP 5.3+ installed
 ([how to install PHP?](http://php.net/manual/en/install.php)):
+```
+$ php -v
+```
 
 Install required PEAR libraries
 ([how to install PEAR?](http://pear.php.net/manual/nl/installation.php)):
