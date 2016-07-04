@@ -50,7 +50,7 @@ final class Migrations implements \Iterator {
         if (!isset($opts['t'])) {
             throw new \Exception('Trac URL not defined by -t=...');
         }
-        ini_set("default_socket_timeout", -1);
+        ini_set("default_socket_timeout", 100000);
         log('PHP socket timeout reset to enable long-running queries');
         $this->_trac = \XML_RPC2_Client::create(
             $opts['t'],
@@ -69,7 +69,12 @@ final class Migrations implements \Iterator {
         if (!isset($opts['r'])) {
             throw new \Exception('GitHub repository name not defined by -r=...');
         }
-        $this->_github = new Github($opts['u'], $opts['r'], $opts['p']);
+        if (!isset($opts['o'])) {
+            $this->_github = new Github($opts['u'], $opts['r'], $opts['p']);//if organization is not set,it uses the normal function
+        } else {
+            $this->_github = new Github($opts['u'], $opts['r'], $opts['p'], $opts['o']);
+        }
+
         $existing = $this->_github->issues();
         if (!empty($existing)) {
             log('GitHub repository is not empty and contains ' . count($existing) . ' issue(s)!');

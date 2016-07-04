@@ -49,28 +49,19 @@ final class TicketMigration implements Migration {
         $details = $this->_trac->get($this->_number);
         $summary = $details[3]['summary'];
         $description = $details[3]['description'];
-        if ($this->_github->exists($this->_number, $summary)) {
-           log('Ticket #' . $this->_number . ' already exists in GitHub');
+        if ($this->_github->exists($summary)) {
+           log('Ticket #' . $this->_number . ' already exists in GitHub!');
            return;
         }
-        log('Ticket #' . $this->_number . ' goes to GitHub issue #'. $this->_number . ': ' . $summary);
-        while (true) {
-            $issue = $this->_github->create(
-                $summary,
-                $this->_format(
-                    $details[3]['reporter'],
-                    $details[1]->timestamp,
-                    $description
-                )
-            );
-            if ($issue > $this->_number) {
-                throw new \Exception('Github issue number mismatch');
-            }
-            if ($issue == $this->_number) {
-                break;
-            }
-            $this->_github->close($issue);
-        }
+        log('Ticket #' . $this->_number . ': ' . $summary);
+        $issue = $this->_github->create(
+            $summary,
+            $this->_format(
+                $details[3]['reporter'],
+                $details[1]->timestamp,
+                $description
+            )
+        );
         $changes = $this->_trac->changeLog($this->_number);
         $comments = 0;
         foreach ($changes as $change) {
@@ -81,7 +72,7 @@ final class TicketMigration implements Migration {
                 );
             } else if ($change[2] == 'status' && $change[4] == 'closed') {
                 $this->_github->close($issue);
-            } else if ($change[2] == 'status' && $change[4] == 'open') {
+            } else if ($change[2] == 'status' && $change[4] != 'closed') {//muliple different open states
                 $this->_github->reopen($issue);
             }
             ++$comments;

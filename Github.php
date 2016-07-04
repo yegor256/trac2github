@@ -43,10 +43,11 @@ final class Github {
      * @param string $repo Repository
      * @param string $password Password
      */
-    public function __construct($user, $repo, $password) {
+    public function __construct($user, $repo, $password, $orga=NULL) {
         $this->_user = $user;
         $this->_repo = $repo;
         $this->_password = $password;
+        $this->_orga = $orga;
         log('GitHub client configured for ' . $this->_url());
     }
     /**
@@ -56,8 +57,13 @@ final class Github {
      */
     public function issues() {
         $request = new \HTTP_Request2();
-        $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues'));
+        if(!isset($this->_orga)){
+            $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues'));
+        } else {
+            $request->setUrl($this->_url('/repos/' . $this->_orga . '/' . $this->_repo . '/issues'));
+        }
         $json = json_decode($request->send()->getBody(), true);
+        print_r($json);
         log('Found ' . count($json) . ' issues in GitHub');
         return $json;
     }
@@ -67,28 +73,25 @@ final class Github {
      * @param string $title Title of the new issue
      * @return bool TRUE if it already exists
      */
-    public function exists($issue, $title) {
+    public function exists($title) {
         $request = new \HTTP_Request2();
-        $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues/' . $issue));
+        if(!isset($this->_orga)){
+            $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues?state=all'));
+        } else {
+            $request->setUrl($this->_url('/repos/' . $this->_orga . '/' . $this->_repo . '/issues?state=all'));
+        }
         $attempt = 0;
-        while (true) {
-            try {
-                $response = $request->send();
-                if ($response->getStatus() == 404) {
-                    return false;
-                }
-                if ($response->getStatus() == 200) {
+        try {
+            $response = $request->send();
+            $arr=json_decode($response->getBody());
+            foreach ($arr as $key) {
+                if (strcmp($key->title,$title)==0){
                     return true;
                 }
-                log('failed to check: ' . $response->getBody());
-            } catch (\HTTP_Request2_Exception $e) {
-                log('failed to check for issue existence');
             }
-            if (++$attempt > 5) {
-                throw new \HTTP_Request2_Exception(
-                    'failed to check issue #' . $issue . ' in Github'
-                );
-            }
+            return false;
+        } catch (\HTTP_Request2_Exception $e) {
+            log('failed to check for issue existence');
         }
     }
     /**
@@ -99,7 +102,11 @@ final class Github {
      */
     public function create($title, $body) {
         $request = new \HTTP_Request2();
-        $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues'));
+        if(!isset($this->_orga)){
+            $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues'));
+        } else {
+            $request->setUrl($this->_url('/repos/' . $this->_orga . '/' . $this->_repo . '/issues'));
+        }
         $request->setMethod('POST');
         $request->setBody(
             json_encode(
@@ -138,7 +145,11 @@ final class Github {
      */
     public function post($issue, $comment) {
         $request = new \HTTP_Request2();
-        $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues/' . $issue . '/comments'));
+        if(!isset($this->_orga)){
+            $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues/' . $issue . '/comments'));
+        } else {
+            $request->setUrl($this->_url('/repos/' . $this->_orga . '/' . $this->_repo . '/issues/' . $issue . '/comments'));
+        }
         $request->setMethod('POST');
         $request->setBody(json_encode(array('body' => $comment)));
         $attempt = 0;
@@ -167,7 +178,11 @@ final class Github {
      */
     public function close($issue) {
         $request = new \HTTP_Request2();
-        $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues/' . $issue));
+        if(!isset($this->_orga)){
+            $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues/' . $issue));
+        } else {
+            $request->setUrl($this->_url('/repos/' . $this->_orga . '/' . $this->_repo . '/issues/' . $issue));
+        }
         $request->setMethod('PATCH');
         $request->setBody(json_encode(array('state' => 'closed')));
         $response = $request->send();
@@ -185,7 +200,11 @@ final class Github {
      */
     public function reopen($issue) {
         $request = new \HTTP_Request2();
-        $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues/' . $issue));
+        if(!isset($this->_orga)){
+            $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues/' . $issue));
+        } else {
+            $request->setUrl($this->_url('/repos/' . $this->_orga . '/' . $this->_repo . '/issues/' . $issue));
+        }
         $request->setMethod('PATCH');
         $request->setBody(json_encode(array('state' => 'open')));
         $response = $request->send();
