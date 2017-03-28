@@ -30,6 +30,11 @@ final class Github {
      */
     private $_repo;
     /**
+     * Repository url.
+     * @var string
+     */
+    private $_repo_url;
+    /**
      * Github password.
      * @var string
      */
@@ -45,6 +50,11 @@ final class Github {
         $this->_repo = $repo;
         $this->_password = $password;
         $this->_orga = $orga;
+        if(empty($this->_orga)) {
+            $this->_repo_url = '/repos/' . $this->_user . '/' . $this->_repo;
+        } else {
+            $this->_repo_url = '/repos/' . $this->_orga . '/' . $this->_repo;
+        }
         log('GitHub client configured for ' . $this->_url());
     }
 
@@ -71,11 +81,7 @@ final class Github {
     public function issues() {
         $request = new \HTTP_Request2();
         $request->setConfig(['adapter' => 'Curl']);
-        if(!isset($this->_orga)){
-            $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues'));
-        } else {
-            $request->setUrl($this->_url('/repos/' . $this->_orga . '/' . $this->_repo . '/issues'));
-        }
+        $request->setUrl($this->_url($this->_repo_url . '/issues'));
         $json = json_decode($request->send()->getBody(), true);
         log('Found ' . count($json) . ' issues in GitHub');
         return $json;
@@ -89,11 +95,7 @@ final class Github {
     public function exists($title) {
         $request = new \HTTP_Request2();
         $request->setConfig(['adapter' => 'Curl']);
-        if(!isset($this->_orga)){
-            $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues?state=all'));
-        } else {
-            $request->setUrl($this->_url('/repos/' . $this->_orga . '/' . $this->_repo . '/issues?state=all'));
-        }
+        $request->setUrl($this->_url($this->_repo_url . '/issues?state=all'));
         $attempt = 0;
         try {
             $response = $request->send();
@@ -118,11 +120,7 @@ final class Github {
         $this->wait_limit_reset();
         $request = new \HTTP_Request2();
         $request->setConfig(['adapter' => 'Curl']);
-        if(!isset($this->_orga)){
-            $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues'));
-        } else {
-            $request->setUrl($this->_url('/repos/' . $this->_orga . '/' . $this->_repo . '/issues'));
-        }
+        $request->setUrl($this->_url($this->_repo_url . '/issues'));
         $request->setMethod('POST');
         $request->setBody(
             json_encode(
@@ -162,11 +160,7 @@ final class Github {
     public function post($issue, $comment) {
         $request = new \HTTP_Request2();
         $request->setConfig(['adapter' => 'Curl']);
-        if(!isset($this->_orga)){
-            $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues/' . $issue . '/comments'));
-        } else {
-            $request->setUrl($this->_url('/repos/' . $this->_orga . '/' . $this->_repo . '/issues/' . $issue . '/comments'));
-        }
+        $request->setUrl($this->_url($this->_repo_url . '/issues/' . $issue . '/comments'));
         $request->setMethod('POST');
         $request->setBody(json_encode(array('body' => $comment)));
         $attempt = 0;
@@ -196,11 +190,7 @@ final class Github {
     public function close($issue) {
         $request = new \HTTP_Request2();
         $request->setConfig(['adapter' => 'Curl']);
-        if(!isset($this->_orga)){
-            $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues/' . $issue));
-        } else {
-            $request->setUrl($this->_url('/repos/' . $this->_orga . '/' . $this->_repo . '/issues/' . $issue));
-        }
+        $request->setUrl($this->_url($this->_repo_url . '/issues/' . $issue));
         $request->setMethod('PATCH');
         $request->setBody(json_encode(array('state' => 'closed')));
         $response = $request->send();
@@ -219,11 +209,7 @@ final class Github {
     public function reopen($issue) {
         $request = new \HTTP_Request2();
         $request->setConfig(['adapter' => 'Curl']);
-        if(!isset($this->_orga)){
-            $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues/' . $issue));
-        } else {
-            $request->setUrl($this->_url('/repos/' . $this->_orga . '/' . $this->_repo . '/issues/' . $issue));
-        }
+        $request->setUrl($this->_url($this->_repo_url . '/issues/' . $issue));
         $request->setMethod('PATCH');
         $request->setBody(json_encode(array('state' => 'open')));
         $response = $request->send();
