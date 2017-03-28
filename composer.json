@@ -1,0 +1,16 @@
+{
+  "name": "trac2github",
+  "require": {
+    "php": ">=5.3.0",
+    "pear/xml_rpc2": "*",
+    "pear/HTTP_Request2": "*",
+    "pear/Net_URL2": "*"
+  },
+  "minimum-stability":"dev",
+  "repositories": {
+    "pear": {
+      "type": "pear",
+      "url": "https://pear.php.net"
+    }
+  }
+}

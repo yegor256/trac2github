@@ -24,6 +24,10 @@ final class TicketMigration implements Migration {
      */
     private $_trac;
     /**
+     * Trac legacy site URL.
+     */
+    private $_trac_url;
+    /**
      * Ticket number.
      */
     private $_number;
@@ -37,10 +41,11 @@ final class TicketMigration implements Migration {
      * @param XML_RPC2_Client $trac Trac client
      * @param int $number Ticket number
      */
-    public function __construct(\XML_RPC2_Client $trac, $number, Github $github) {
+    public function __construct(\XML_RPC2_Client $trac, $number, Github $github, $trac_url) {
         $this->_trac = $trac;
         $this->_number = $number;
         $this->_github = $github;
+        $this->_trac_url = $trac_url;
     }
 	/**
 	 * Shoot the migration.
@@ -49,39 +54,32 @@ final class TicketMigration implements Migration {
         $details = $this->_trac->get($this->_number);
         $summary = $details[3]['summary'];
         $description = $details[3]['description'];
-        if ($this->_github->exists($this->_number, $summary)) {
-           log('Ticket #' . $this->_number . ' already exists in GitHub');
+
+        if ($this->_github->exists($summary)) {
+           log('Ticket #' . $this->_number . ' already exists in GitHub!');
            return;
         }
-        log('Ticket #' . $this->_number . ' goes to GitHub issue #'. $this->_number . ': ' . $summary);
-        while (true) {
-            $issue = $this->_github->create(
-                $summary,
-                $this->_format(
-                    $details[3]['reporter'],
-                    $details[1]->timestamp,
-                    $description
-                )
-            );
-            if ($issue > $this->_number) {
-                throw new \Exception('Github issue number mismatch');
-            }
-            if ($issue == $this->_number) {
-                break;
-            }
-            $this->_github->close($issue);
-        }
+        log('Ticket #' . $this->_number . ': ' . $summary);
+        $issue = $this->_github->create(
+            $summary,
+            $this->_format(
+                $details[3]['reporter'],
+                $details[1]->timestamp,
+                $description,
+                $this->_number
+            )
+        );
         $changes = $this->_trac->changeLog($this->_number);
         $comments = 0;
         foreach ($changes as $change) {
             if ($change[2] == 'comment' && !empty($change[4])) {
                 $this->_github->post(
                     $issue,
-                    $this->_format($change[1], $change[0]->timestamp, $change[4])
+                    $this->_format($change[1], $change[0]->timestamp, $change[4], $this->_number.'#comment:'.$change[3])
                 );
             } else if ($change[2] == 'status' && $change[4] == 'closed') {
                 $this->_github->close($issue);
-            } else if ($change[2] == 'status' && $change[4] == 'open') {
+            } else if ($change[2] == 'status' && $change[4] != 'closed') {//muliple different open states
                 $this->_github->reopen($issue);
             }
             ++$comments;
@@ -97,7 +95,7 @@ final class TicketMigration implements Migration {
      * @param int $date When posted to Trac
      * @param string $text Comment text from Trac
      */
-    private function _format($author, $date, $text) {
+    private function _format($author, $date, $text, $number) {
         $regexps = array(
             '/\{{3}(.+?)\}{3}/' => '`\1`',
             '/\{{3}[^\n]*\n(.+?)\n\}{3}/s' => "```\n\\1\n```",
@@ -111,16 +109,17 @@ final class TicketMigration implements Migration {
             '/\'{2}(.+)\'{2}/' => '_\1_',
             '/^\s\*/' => '*',
             '/^\s\d\./' => '1.',
+            '/@+?(\w+)/' => '**\1**',
         );
         $md = preg_replace(array_keys($regexps), $regexps, $text);
         $matches = array();
         if (preg_match('/^(.*?)@.*$/', $author, $matches)) {
             $author = $matches[1];
         }
-        $body = '_migrated from Trac, where originally posted by '
-            . '**' . $author . '** on '
-            . date('j-M-o g:ia', $date)
-            . "_\n\n" . $md;
+        $body = '#### On '.date('M j, o, \a\t g:ia', $date). ', **' . $author . '** wrote '
+          .'([Trac issue '.$number.']('.$this->_trac_url.'/ticket/'.$number.')):'
+          . "\n\n"
+          . $md;
         if (strlen($body) > 60000) {
             $body = substr($body, 0, 60000);
         }
