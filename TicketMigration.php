@@ -116,11 +116,10 @@ final class TicketMigration implements Migration {
         if (preg_match('/^(.*?)@.*$/', $author, $matches)) {
             $author = $matches[1];
         }
-        $body = $md . "\n\n"
-						.'_migrated from [Trac issue '.$number.']('.$this->_trac_url.'/ticket/'.$number.'), where originally posted by '
-						. '**' . $author . '** on '
-            . date('j-M-o g:ia', $date)
-            . "_";
+        $body = '#### On '.date('M j, o, \a\t g:ia', $date). ', **' . $author . '** wrote '
+          .'([Trac issue '.$number.']('.$this->_trac_url.'/ticket/'.$number.')):'
+          . "\n\n"
+          . $md;
         if (strlen($body) > 60000) {
             $body = substr($body, 0, 60000);
         }
