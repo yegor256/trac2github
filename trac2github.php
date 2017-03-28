@@ -30,7 +30,7 @@ log('PHP version detected: ' . PHP_VERSION);
 date_default_timezone_set('UTC');
 log('Trac timezone set to ' . date_default_timezone_get());
 
-$opts = getopt("ht:u:p:r:o::");
+$opts = getopt("ht:u:p:r:o::i::");
 try {
 	require_once './Migrations.php';
     $migrations = new Migrations($opts);
@@ -47,7 +47,8 @@ Usage: php trac2github.php [options]
     -u=<github-user>        GitHub user name
     -r=<repository>         GitHub repository name
     -p=<github-password>    GitHub password
-    -o=<organization>       [optional]if set it will search the repostitory under the organization
+    -o=<organization>       [optional] if set it will search the repostitory under the organization
+    -i=<1313,1515,1919>     [optional] if set it will migrate only specified tickets from trac
 
 EOT;
     die(0);

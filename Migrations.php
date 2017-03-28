@@ -73,6 +73,9 @@ final class Migrations implements \Iterator {
         } else {
             $this->_github = new Github($opts['u'], $opts['r'], $opts['p'], $opts['o']);
         }
+        if (isset($opts['i'])) {
+            $this->_numbers = array_map('intval', explode(',', $opts['i']));
+        }
 
         $existing = $this->_github->issues();
         if (!empty($existing)) {
@@ -84,9 +87,11 @@ final class Migrations implements \Iterator {
      */
     public function rewind() {
         $this->_position = 0;
-        $this->_numbers = array();
-        log('Loading Trac ticket numbers... (may take some time)');
-        $this->_numbers = $this->_trac->query("max=0&order=id");
+        if(empty($this->_numbers)) {
+            $this->_numbers = array();
+            log('Loading Trac ticket numbers... (may take some time)');
+            $this->_numbers = $this->_trac->query("max=0&order=id");
+        }
         log('Found ' . count($this->_numbers) . ' ticket number(s)');
     }
     /**
