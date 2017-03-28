@@ -27,6 +27,10 @@ final class Migrations implements \Iterator {
      */
     private $_trac;
     /**
+     * Trac legacy URL
+     */
+    private $_trac_url;
+    /**
      * Github client.
      * @var Github
      */
@@ -58,6 +62,13 @@ final class Migrations implements \Iterator {
                 'encoding' => 'utf-8',
             )
         );
+
+        $trac_url = parse_url($opts['t']);
+        $this->_trac_url = $trac_url['scheme']
+            .'://'.$trac_url['host']
+            .(empty($trac_url['port']) ? '' : ':'.$trac_url['port'])
+            .preg_replace('%(/login)?/rpc$%', '', $trac_url['path']);
+
         log('Trac XML RPC client configured at ' . $opts['t']);
         if (!isset($opts['u'])) {
             throw new \Exception('GitHub user name not defined by -u=...');
@@ -102,7 +113,8 @@ final class Migrations implements \Iterator {
         return new TicketMigration(
             $this->_trac,
             $this->_numbers[$this->_position],
-            $this->_github
+            $this->_github,
+            $this->_trac_url
         );
     }
     /**

@@ -24,6 +24,10 @@ final class TicketMigration implements Migration {
      */
     private $_trac;
     /**
+     * Trac legacy site URL.
+     */
+    private $_trac_url;
+    /**
      * Ticket number.
      */
     private $_number;
@@ -37,10 +41,11 @@ final class TicketMigration implements Migration {
      * @param XML_RPC2_Client $trac Trac client
      * @param int $number Ticket number
      */
-    public function __construct(\XML_RPC2_Client $trac, $number, Github $github) {
+    public function __construct(\XML_RPC2_Client $trac, $number, Github $github, $trac_url) {
         $this->_trac = $trac;
         $this->_number = $number;
         $this->_github = $github;
+        $this->_trac_url = $trac_url;
     }
 	/**
 	 * Shoot the migration.
@@ -60,7 +65,8 @@ final class TicketMigration implements Migration {
             $this->_format(
                 $details[3]['reporter'],
                 $details[1]->timestamp,
-                $description
+                $description,
+                $this->_number
             )
         );
         $changes = $this->_trac->changeLog($this->_number);
@@ -69,7 +75,7 @@ final class TicketMigration implements Migration {
             if ($change[2] == 'comment' && !empty($change[4])) {
                 $this->_github->post(
                     $issue,
-                    $this->_format($change[1], $change[0]->timestamp, $change[4])
+                    $this->_format($change[1], $change[0]->timestamp, $change[4], $this->_number.'#comment:'.$change[3])
                 );
             } else if ($change[2] == 'status' && $change[4] == 'closed') {
                 $this->_github->close($issue);
@@ -89,7 +95,7 @@ final class TicketMigration implements Migration {
      * @param int $date When posted to Trac
      * @param string $text Comment text from Trac
      */
-    private function _format($author, $date, $text) {
+    private function _format($author, $date, $text, $number) {
         $regexps = array(
             '/\{{3}(.+?)\}{3}/' => '`\1`',
             '/\{{3}[^\n]*\n(.+?)\n\}{3}/s' => "```\n\\1\n```",
@@ -110,10 +116,11 @@ final class TicketMigration implements Migration {
         if (preg_match('/^(.*?)@.*$/', $author, $matches)) {
             $author = $matches[1];
         }
-        $body = '_migrated from Trac, where originally posted by '
-            . '**' . $author . '** on '
+        $body = $md . "\n\n"
+						.'_migrated from [Trac issue '.$number.']('.$this->_trac_url.'/ticket/'.$number.'), where originally posted by '
+						. '**' . $author . '** on '
             . date('j-M-o g:ia', $date)
-            . "_\n\n" . $md;
+            . "_";
         if (strlen($body) > 60000) {
             $body = substr($body, 0, 60000);
         }
