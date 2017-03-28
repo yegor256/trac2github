@@ -70,6 +70,7 @@ final class Github {
      */
     public function issues() {
         $request = new \HTTP_Request2();
+        $request->setConfig(['adapter' => 'Curl']);
         if(!isset($this->_orga)){
             $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues'));
         } else {
@@ -87,6 +88,7 @@ final class Github {
      */
     public function exists($title) {
         $request = new \HTTP_Request2();
+        $request->setConfig(['adapter' => 'Curl']);
         if(!isset($this->_orga)){
             $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues?state=all'));
         } else {
@@ -115,6 +117,7 @@ final class Github {
     public function create($title, $body) {
         $this->wait_limit_reset();
         $request = new \HTTP_Request2();
+        $request->setConfig(['adapter' => 'Curl']);
         if(!isset($this->_orga)){
             $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues'));
         } else {
@@ -158,6 +161,7 @@ final class Github {
      */
     public function post($issue, $comment) {
         $request = new \HTTP_Request2();
+        $request->setConfig(['adapter' => 'Curl']);
         if(!isset($this->_orga)){
             $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues/' . $issue . '/comments'));
         } else {
@@ -191,6 +195,7 @@ final class Github {
      */
     public function close($issue) {
         $request = new \HTTP_Request2();
+        $request->setConfig(['adapter' => 'Curl']);
         if(!isset($this->_orga)){
             $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues/' . $issue));
         } else {
@@ -213,6 +218,7 @@ final class Github {
      */
     public function reopen($issue) {
         $request = new \HTTP_Request2();
+        $request->setConfig(['adapter' => 'Curl']);
         if(!isset($this->_orga)){
             $request->setUrl($this->_url('/repos/' . $this->_user . '/' . $this->_repo . '/issues/' . $issue));
         } else {
