@@ -1,4 +1,7 @@
 <?php namespace tg;
+
+require './vendor/autoload.php';
+
 /**
  * Copyright 2013 Yegor Bugayenko
  *

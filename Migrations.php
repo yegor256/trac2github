@@ -16,7 +16,6 @@
 
 require_once './Github.php';
 require_once './TicketMigration.php';
-require_once 'XML/RPC2/Client.php';
 
 /**
  * Iterator of all ticket migrations.

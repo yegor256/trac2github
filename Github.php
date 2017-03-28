@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-require_once 'HTTP/Request2.php';
-require_once 'Net/URL2.php';
-
 /**
  * GitHub client.
  * @see http://developer.github.com/v3/issues/
